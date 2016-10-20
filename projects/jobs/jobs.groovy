@@ -5,10 +5,10 @@ def platformToolsGitUrl = bitbucketBaseUrl + "/platform/platform-management"
 
 // Folders
 def workspaceFolderName = "${WORKSPACE_NAME}"
-def projectName = "${PROJECT_NAME}"
 
 def projectFolderName = workspaceFolderName + "/${PROJECT_NAME}"
 def projectFolder = folder(projectFolderName)
+def projectName = ${PROJECT_NAME}
 
 def cartridgeManagementFolderName= projectFolderName + "/Cartridge_Management"
 def cartridgeManagementFolder = folder(cartridgeManagementFolderName) { displayName('Cartridge Management') }
@@ -39,8 +39,8 @@ loadCartridgeJob.with{
     }
     environmentVariables {
         env('WORKSPACE_NAME',workspaceFolderName)
-        env('PROJECT_FOLDER_NAME',projectFolderName)
-        env('PROJECT_NAME',projectName)
+        env('PROJECT_NAME',projectFolderName)
+        env('PROJECT_NAME_WITHOUT_FOLDER',projectName)
     }
     wrappers {
         preBuildCleanup()
@@ -51,11 +51,9 @@ loadCartridgeJob.with{
     steps {
         shell('''#!/bin/bash -ex
 
-#!/bin/bash -ex
-
 # We trust everywhere
 #echo -e "#!/bin/sh
-#exec ssh -o StrictHostKeyChecking=no "\$@"
+#exec ssh -o StrictHostKeyChecking=no "$@"
 #" > ${WORKSPACE}/custom_ssh
 #chmod +x ${WORKSPACE}/custom_ssh
 #export GIT_SSH="${WORKSPACE}/custom_ssh"
@@ -91,23 +89,15 @@ cd ${WORKSPACE}/tmp
 bitbucket_token=$(echo -n "$BITBUCKET_ADMIN_USERNAME:$BITBUCKET_ADMIN_PASSWORD" | base64)
 
 # Check if project platform exists
-project_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/${PROJECT_NAME})
+project_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/${PROJECT_NAME_WITHOUT_FOLDER})
 
 if [ "$project_exists_return_code" -eq "404" ]; then
 
 cat <<EOF > project.json
 {
-    "key":"${PROJECT_NAME}",
-    "name":"${PROJECT_NAME}",
-    "description":"Projet ${PROJECT_NAME}"
-}
-EOF
-
-cat <<EOF > project.json
-{
-    "name":"$repo_name",
-    "scmId":"git", 
-    "forkable":true 
+    "key":"${PROJECT_NAME_WITHOUT_FOLDER}",
+    "name":"${PROJECT_NAME_WITHOUT_FOLDER}",
+    "description":"Projet ${PROJECT_NAME_WITHOUT_FOLDER}"
 }
 EOF
 
@@ -118,30 +108,31 @@ fi
 
 while read repo_url; do
     if [ ! -z "${repo_url}" ]; then
+    echo "avant"
+    echo ${repo_url}
         repo_name=$(echo "${repo_url}" | rev | cut -d'/' -f1 | rev | sed 's#.git$##g')
-        #target_repo_name="${repo_namespace}/${repo_name}"
-        # Check if the repository already exists or not
+        echo ${repo_name}
         
         # Check if repo exists
-        repo_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$PROJECT_NAME/repos/$repo_name)
+        repo_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$PROJECT_NAME_WITHOUT_FOLDER/repos/$repo_name)
         
         if [ "$repo_exists_return_code" -eq "404" ]; then
-
+        
 cat <<EOF > repo.json
 {
     "name":"$repo_name",
-    "scmId":"git", 
-    "forkable":true 
+    "scmId":"git",
+    "forkable":true
 }
 EOF
+		curl -X POST -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" -d @repo.json http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$PROJECT_NAME_WITHOUT_FOLDER/repos
 
-          curl -o /dev/null -X POST -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" -d @repo.json http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$PROJECT_NAME/repos
         else
           echo "Repo already exists, continue ..."
         fi
-
+        
         # Populate repository
-        git clone ssh://jenkins@bitbucket:7999/${PROJECT_NAME}/${repo_name}"
+        git clone ssh://jenkins@bitbucket:7999/${PROJECT_NAME_WITHOUT_FOLDER}/${repo_name}
         cd "${repo_name}"
         git remote add source "${repo_url}"
         git fetch source
@@ -153,7 +144,7 @@ EOF
             set -e
         fi
         cd -
-    fi
+	fi
 done < ${WORKSPACE}/${CART_HOME}/src/urls.txt
 
 # Provision one-time infrastructure
