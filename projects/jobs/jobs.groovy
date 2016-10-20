@@ -30,7 +30,8 @@ def loadCartridgeCollectionJob = workflowJob(cartridgeManagementFolderName + "/L
 // Setup Load_Cartridge
 loadCartridgeJob.with{
     parameters{
-        choiceParam('CARTRIDGE_CLONE_URL', cartridge_list, 'Cartridge URL to load')
+        choiceParam('CARTRIDGE_CLONE_URL', cartridge_list, 'Cartridge URL to load.')
+        stringParam('CARTRIDGE_BRANCH', '*/master', 'Cartridge branch to load.')
         stringParam('CARTRIDGE_FOLDER', '', 'The folder within the project namespace where your cartridge will be loaded into.')
         stringParam('FOLDER_DISPLAY_NAME', '', 'Display name of the folder where the cartridge is loaded.')
         stringParam('FOLDER_DESCRIPTION', '', 'Description of the folder where the cartridge is loaded.')
@@ -59,7 +60,7 @@ loadCartridgeJob.with{
 #export GIT_SSH="${WORKSPACE}/custom_ssh"
 
 # Clone Cartridge
-git clone ${CARTRIDGE_CLONE_URL} cartridge
+git clone -b ${CARTRIDGE_BRANCH} ${CARTRIDGE_CLONE_URL} cartridge
 
 # Find the cartridge
 export CART_HOME=$(dirname $(find -name metadata.cartridge | head -1))
