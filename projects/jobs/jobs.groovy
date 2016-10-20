@@ -8,7 +8,7 @@ def workspaceFolderName = "${WORKSPACE_NAME}"
 
 def projectFolderName = workspaceFolderName + "/${PROJECT_NAME}"
 def projectFolder = folder(projectFolderName)
-def projectName = ${PROJECT_NAME}
+def projectName = "${PROJECT_NAME}"
 
 def cartridgeManagementFolderName= projectFolderName + "/Cartridge_Management"
 def cartridgeManagementFolder = folder(cartridgeManagementFolderName) { displayName('Cartridge Management') }
