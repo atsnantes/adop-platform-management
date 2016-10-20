@@ -49,10 +49,14 @@ loadCartridgeJob.with{
     steps {
         shell('''#!/bin/bash -ex
 
+#!/bin/bash -ex
+
 # We trust everywhere
-echo -e "#!/bin/sh\nexec ssh -o StrictHostKeyChecking=no \"\\\$@\"\n" > ${WORKSPACE}/custom_ssh
-chmod +x ${WORKSPACE}/custom_ssh
-export GIT_SSH="${WORKSPACE}/custom_ssh"
+#echo -e "#!/bin/sh
+#exec ssh -o StrictHostKeyChecking=no "\$@"
+#" > ${WORKSPACE}/custom_ssh
+#chmod +x ${WORKSPACE}/custom_ssh
+#export GIT_SSH="${WORKSPACE}/custom_ssh"
 
 # Clone Cartridge
 git clone ${CARTRIDGE_CLONE_URL} cartridge
@@ -61,50 +65,73 @@ git clone ${CARTRIDGE_CLONE_URL} cartridge
 export CART_HOME=$(dirname $(find -name metadata.cartridge | head -1))
 
 # Check if the user has enabled Gerrit Code reviewing
-if [ "$ENABLE_CODE_REVIEW" == true ]; then
-    permissions_repo="${PROJECT_NAME}/permissions-with-review"
-else
-    permissions_repo="${PROJECT_NAME}/permissions"
-fi
+#if [ "$ENABLE_CODE_REVIEW" == true ]; then
+#    permissions_repo="${PROJECT_NAME}/permissions-with-review"
+#else
+#    permissions_repo="${PROJECT_NAME}/permissions"
+#fi
+echo "TODO : gestion permission bitbucket !!!!"
 
 # Check if folder was specified
-if [ -z ${CARTRIDGE_FOLDER} ] ; then
-    echo "Folder name not specified..."
-    repo_namespace="${PROJECT_NAME}"
-else
-    echo "Folder name specified, changing project namespace value.."
-    repo_namespace="${PROJECT_NAME}/${CARTRIDGE_FOLDER}"
-fi
+#if [ -z ${CARTRIDGE_FOLDER} ] ; then
+#    echo "Folder name not specified..."
+#    repo_namespace="${PROJECT_NAME}"
+#else
+#    echo "Folder name specified, changing project namespace value.."
+#    repo_namespace="${PROJECT_NAME}/${CARTRIDGE_FOLDER}"
+#fi
 
 # Create repositories
 mkdir ${WORKSPACE}/tmp
 cd ${WORKSPACE}/tmp
+
+# Init basic auth
+bitbucket_token=$(echo -n "$BITBUCKET_ADMIN_USERNAME:$BITBUCKET_ADMIN_PASSWORD" | base64)
+
+# Check if project platform exists
+project_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/${PROJECT_NAME})
+
+if [ "$project_exists_return_code" -eq "404" ]; then
+
+cat <<EOF > project.json
+{
+    "key":"${PROJECT_NAME}",
+    "name":"${PROJECT_NAME}",
+    "description":"Projet ${PROJECT_NAME}"
+}
+EOF
+
+  curl -o /dev/null -X POST -H "Authorization: Basic ${bitbucket_token}" -H "Content-Type: application/json" -d @project.json http://bitbucket:7990/bitbucket/rest/api/1.0/projects
+else
+  echo "Project already exists, continue ..."
+fi
+
 while read repo_url; do
     if [ ! -z "${repo_url}" ]; then
         repo_name=$(echo "${repo_url}" | rev | cut -d'/' -f1 | rev | sed 's#.git$##g')
-        target_repo_name="${repo_namespace}/${repo_name}"
+        #target_repo_name="${repo_namespace}/${repo_name}"
         # Check if the repository already exists or not
-        repo_exists=0
-        list_of_repos=$(ssh -n -o StrictHostKeyChecking=no -p 29418 jenkins@gerrit gerrit ls-projects --type code)
+        
+        # Check if repo exists
+        repo_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$PROJECT_NAME/repos/$repo_name)
+        
+        if [ "$repo_exists_return_code" -eq "404" ]; then
 
-        for repo in ${list_of_repos}
-        do
-            if [ ${repo} = ${target_repo_name} ]; then
-                echo "Found: ${repo}"
-                repo_exists=1
-                break
-            fi
-        done
+cat <<EOF > repo.json
+{
+    "name":"$repo_name",
+    "scmId":"git", 
+    "forkable":true 
+}
+EOF
 
-        # If not, create it
-        if [ ${repo_exists} -eq 0 ]; then
-            ssh -n -o StrictHostKeyChecking=no -p 29418 jenkins@gerrit gerrit create-project --parent "${permissions_repo}" "${target_repo_name}"
+          curl -o /dev/null -X POST -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" -d @repo.json http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$PROJECT_NAME/repos
         else
-            echo "Repository already exists, skipping create: ${target_repo_name}"
+          echo "Repo already exists, continue ..."
         fi
 
         # Populate repository
-        git clone ssh://jenkins@bitbucket:7999/"${target_repo_name}"
+        git clone ssh://jenkins@bitbucket:7999/${PROJECT_NAME}/${repo_name}"
         cd "${repo_name}"
         git remote add source "${repo_url}"
         git fetch source
