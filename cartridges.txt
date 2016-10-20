@@ -1,2 +1,1 @@
-https://github.com/Accenture/adop-cartridge-java.git
-https://github.com/Accenture/adop-cartridge-docker.git
+https://github.com//atsnantes/adop-cartridge-java.git

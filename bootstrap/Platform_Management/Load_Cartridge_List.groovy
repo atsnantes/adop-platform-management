@@ -1,5 +1,5 @@
 // Constants
-def platformToolsGitURL = "ssh://jenkins@gerrit:29418/platform-management"
+def platformToolsGitURL = "ssh://jenkins@bitbucket:7999/platform/platform-management"
 
 def platformManagementFolderName= "/Platform_Management"
 def platformManagementFolder = folder(platformManagementFolderName) { displayName('Platform Management') }
@@ -17,9 +17,14 @@ loadCartridgeJob.with{
         shell('''#!/bin/bash -ex
 
 # We trust everywhere
-echo -e "#!/bin/sh\nexec ssh -o StrictHostKeyChecking=no \"\\\$@\"\n" > ${WORKSPACE}/custom_ssh
-chmod +x ${WORKSPACE}/custom_ssh
-export GIT_SSH="${WORKSPACE}/custom_ssh"
+#echo -e "#!/bin/sh
+#exec ssh -o StrictHostKeyChecking=no "\$@"
+#" > ${WORKSPACE}/custom_ssh
+#chmod +x ${WORKSPACE}/custom_ssh
+#export GIT_SSH="${WORKSPACE}/custom_ssh"
+
+# Init globale var
+project_key="platform"
 
 # Create repositories
 mkdir ${WORKSPACE}/tmp
@@ -27,30 +32,31 @@ cd ${WORKSPACE}/tmp
 while read repo_url; do
     if [ ! -z "${repo_url}" ]; then
         repo_name=$(echo "${repo_url}" | rev | cut -d'/' -f1 | rev | sed 's#.git$##g')
-        target_repo_name="cartridges/${repo_name}"
+        target_repo_name="${repo_name}"
+        
+        # Init basic auth
+        bitbucket_token=$(echo -n "$BITBUCKET_ADMIN_USERNAME:$BITBUCKET_ADMIN_PASSWORD" | base64)
+        
+        # Check if repo platform exists
+        repo_exists_return_code=$(curl -s -o /dev/null -w '%{http_code}' -X GET -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$project_key/repos/$target_repo_name)
+        
+        if [ "$repo_exists_return_code" -eq "404" ]; then
+        
+cat <<EOF > repo.json
+{
+   "name":"$target_repo_name",
+   "scmId":"git", 
+   "forkable":true 
+}
+EOF
 
-        # Check if the repository already exists or not
-        repo_exists=0
-        list_of_repos=$(ssh -n -o StrictHostKeyChecking=no -p 29418 gerrit gerrit ls-projects --type code)
-
-        for repo in ${list_of_repos}
-        do
-            if [ ${repo} = ${target_repo_name} ]; then
-                echo "Found: ${repo}"
-                repo_exists=1
-                break
-            fi
-        done
-
-        # If not, create it
-        if [ ${repo_exists} -eq 0 ]; then
-            ssh -n -o StrictHostKeyChecking=no -p 29418 gerrit gerrit create-project --parent "All-Projects" "${target_repo_name}"
+          curl -o /dev/null -X POST -H "Authorization: Basic $bitbucket_token" -H "Content-Type: application/json" -d @repo.json http://bitbucket:7990/bitbucket/rest/api/1.0/projects/$project_key/repos
         else
-            echo "Repository already exists, skipping: ${target_repo_name}"
+          echo "Repo already exists, continue ..."
         fi
 
         # Populate repository
-        git clone ssh://jenkins@gerrit:29418/"${target_repo_name}"
+        git clone ssh://jenkins@bitbucket:7999/$project_key/${target_repo_name}
         cd "${repo_name}"
         git remote add source "${repo_url}"
         git fetch source
@@ -66,7 +72,7 @@ done < ${WORKSPACE}/platform-management/cartridges.txt''')
                 url("${platformToolsGitURL}")
                 credentials("adop-jenkins-master")
             }
-            branch("*/master")
+            branch("*/feature_bitbucket")
             relativeTargetDir('platform-management')
         }
     }

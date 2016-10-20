@@ -1,5 +1,5 @@
 // Constants
-def platformToolsGitURL = "ssh://jenkins@gerrit:29418/platform-management"
+def platformToolsGitURL = "ssh://jenkins@bitbucket:7999/platform/platform-management"
 
 def workspaceManagementFolderName= "/Workspace_Management"
 def workspaceManagementFolder = folder(workspaceManagementFolderName) { displayName('Workspace Management') }
@@ -72,7 +72,7 @@ done''')
                 url("${platformToolsGitURL}")
                 credentials("adop-jenkins-master")
             }
-            branch("*/master")
+            branch("*/feature_bitbucket")
         }
     }
 } 
