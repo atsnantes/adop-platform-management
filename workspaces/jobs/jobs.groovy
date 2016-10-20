@@ -1,5 +1,5 @@
 // Constants
-def platformToolsGitURL = "ssh://jenkins@gerrit:29418/platform-management"
+def platformToolsGitURL = "ssh://jenkins@bitbucket:7999/platform/platform-management"
 
 // Folders
 def workspaceFolderName = "${WORKSPACE_NAME}"
@@ -57,21 +57,23 @@ set +e
 ${WORKSPACE}/common/ldap/load_ldif.sh -h ldap -u "${LDAP_ADMIN_USER}" -p "${LDAP_ADMIN_PASSWORD}" -b "${DC}" -f "${OUTPUT_FILE}"
 set -e
 
-ADMIN_USERS=$(echo ${ADMIN_USERS} | tr ',' ' ')
-DEVELOPER_USERS=$(echo ${DEVELOPER_USERS} | tr ',' ' ')
-VIEWER_USERS=$(echo ${VIEWER_USERS} | tr ',' ' ')
+#ADMIN_USERS=$(echo ${ADMIN_USERS} | tr ',' ' ')
+#DEVELOPER_USERS=$(echo ${DEVELOPER_USERS} | tr ',' ' ')
+#VIEWER_USERS=$(echo ${VIEWER_USERS} | tr ',' ' ')
 
 # Gerrit
-for user in $ADMIN_USERS $DEVELOPER_USERS $VIEWER_USERS
-do
-        username=$(echo ${user} | cut -d'@' -f1)
-        ${WORKSPACE}/common/gerrit/create_user.sh -g http://gerrit:8080/gerrit -u "${username}" -p "${username}"
-done''')
+#for user in $ADMIN_USERS $DEVELOPER_USERS $VIEWER_USERS
+#do
+#        username=$(echo ${user} | cut -d'@' -f1)
+#        ${WORKSPACE}/common/gerrit/create_user.sh -g http://gerrit:8080/gerrit -u "${username}" -p "${username}"
+#done
+''')
         shell('''#!/bin/bash -ex
+echo "TODO : Adapt to BITBUCKET"
 # Gerrit
-source ${WORKSPACE}/projects/gerrit/configure.sh
+#source ${WORKSPACE}/projects/gerrit/configure.sh
 # Generate second permission repo with enabled code-review
-source ${WORKSPACE}/projects/gerrit/configure.sh -r permissions-with-review''')
+#source ${WORKSPACE}/projects/gerrit/configure.sh -r permissions-with-review''')
         dsl {
             external("projects/jobs/**/*.groovy")
         }
@@ -86,7 +88,7 @@ source ${WORKSPACE}/projects/gerrit/configure.sh -r permissions-with-review''')
                 url("${platformToolsGitURL}")
                 credentials("adop-jenkins-master")
             }
-            branch("*/master")
+            branch("*/feature_bitbucket")
         }
     }
 }

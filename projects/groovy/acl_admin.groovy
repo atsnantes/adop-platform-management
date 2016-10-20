@@ -42,11 +42,9 @@ if (currentAuthenticationStrategy instanceof RoleBasedAuthorizationStrategy) {
     folderPermissions.add(Permission.fromId("hudson.model.Item.Workspace"));
     folderPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.Delete"));
     folderPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains"));
-    folderPermissions.add(Permission.fromId("com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.Retrigger"));
     folderPermissions.add(Permission.fromId("hudson.model.Item.Cancel"));
     folderPermissions.add(Permission.fromId("hudson.model.Item.Read"));
     folderPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.View"));
-    folderPermissions.add(Permission.fromId("com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.ManualTrigger"));
     folderPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.Create"));
     folderPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.Update"));
     folderPermissions.add(Permission.fromId("hudson.model.Item.Build"));
@@ -72,13 +70,11 @@ if (currentAuthenticationStrategy instanceof RoleBasedAuthorizationStrategy) {
     contentPermissions.add(Permission.fromId("hudson.model.Item.Workspace"));
     contentPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.Delete"));
     contentPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains"));
-    contentPermissions.add(Permission.fromId("com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.Retrigger"));
     contentPermissions.add(Permission.fromId("hudson.model.Item.Configure"));
     contentPermissions.add(Permission.fromId("hudson.model.Item.Cancel"));
     contentPermissions.add(Permission.fromId("hudson.model.Item.Delete"));
     contentPermissions.add(Permission.fromId("hudson.model.Item.Read"));
     contentPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.View"));
-    contentPermissions.add(Permission.fromId("com.sonyericsson.hudson.plugins.gerrit.trigger.PluginImpl.ManualTrigger"));
     contentPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.Create"));
     contentPermissions.add(Permission.fromId("com.cloudbees.plugins.credentials.CredentialsProvider.Update"));
     contentPermissions.add(Permission.fromId("hudson.model.Item.Build"));

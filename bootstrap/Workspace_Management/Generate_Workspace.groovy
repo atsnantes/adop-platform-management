@@ -48,16 +48,17 @@ set +e
 ${WORKSPACE}/common/ldap/load_ldif.sh -h ldap -u "${LDAP_ADMIN_USER}" -p "${LDAP_ADMIN_PASSWORD}" -b "${DC}" -f "${OUTPUT_FILE}"
 set -e
 
-ADMIN_USERS=$(echo ${ADMIN_USERS} | tr ',' ' ')
-DEVELOPER_USERS=$(echo ${DEVELOPER_USERS} | tr ',' ' ')
-VIEWER_USERS=$(echo ${VIEWER_USERS} | tr ',' ' ')
+#ADMIN_USERS=$(echo ${ADMIN_USERS} | tr ',' ' ')
+#DEVELOPER_USERS=$(echo ${DEVELOPER_USERS} | tr ',' ' ')
+#VIEWER_USERS=$(echo ${VIEWER_USERS} | tr ',' ' ')
 
 # Gerrit
-for user in $ADMIN_USERS $DEVELOPER_USERS $VIEWER_USERS
-do
-        username=$(echo ${user} | cut -d'@' -f1)
-        ${WORKSPACE}/common/gerrit/create_user.sh -g http://gerrit:8080/gerrit -u "${username}" -p "${username}"
-done''')
+#for user in $ADMIN_USERS $DEVELOPER_USERS $VIEWER_USERS
+#do
+       # username=$(echo ${user} | cut -d'@' -f1)
+        #${WORKSPACE}/common/bitbucket/create_user.sh -g http://bitbucket:7990/bitbucket -u "${username}" -p "${username}"
+#done
+''')
         dsl {
             external("workspaces/jobs/**/*.groovy")
         }
