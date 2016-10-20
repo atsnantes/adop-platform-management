@@ -1,5 +1,5 @@
 // Constants
-def gerritBaseUrl = "ssh://jenkins@gerrit:29418"
+def gerritBaseUrl = "ssh://jenkins@bitbucket:7999"
 def cartridgeBaseUrl = gerritBaseUrl + "/cartridges"
 def platformToolsGitUrl = gerritBaseUrl + "/platform-management"
 
@@ -104,7 +104,7 @@ while read repo_url; do
         fi
 
         # Populate repository
-        git clone ssh://jenkins@gerrit:29418/"${target_repo_name}"
+        git clone ssh://jenkins@bitbucket:7999/"${target_repo_name}"
         cd "${repo_name}"
         git remote add source "${repo_url}"
         git fetch source
