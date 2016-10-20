@@ -60,6 +60,9 @@ loadCartridgeJob.with{
 
 # Clone Cartridge
 git clone ${CARTRIDGE_CLONE_URL} cartridge
+cd cartridge
+git checkout feature_bitbucket
+cd -
 
 # Find the cartridge
 export CART_HOME=$(dirname $(find -name metadata.cartridge | head -1))
