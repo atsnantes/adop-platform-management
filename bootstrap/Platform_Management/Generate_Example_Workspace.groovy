@@ -30,9 +30,8 @@ build job: 'Workspace_Management/Generate_Workspace', parameters: [[$class: 'Str
 
 // Setup Faculty
 build job: "${workspaceName}/Project_Management/Generate_Project", parameters: [[$class: 'StringParameterValue', name: 'PROJECT_NAME', value: "${projectName}"], [$class: 'StringParameterValue', name: 'ADMIN_USERS', value: "${projectName}${projectAdmin}"], [$class: 'StringParameterValue', name: 'DEVELOPER_USERS', value: "${projectName}${projectDeveloper}"], [$class: 'StringParameterValue', name: 'VIEWER_USERS', value: "${projectName}${projectViewer}"]]
-retry(5) {
-    build job: "${workspaceName}/${projectName}/Cartridge_Management/Load_Cartridge", parameters: [[$class: 'StringParameterValue', name: 'CARTRIDGE_CLONE_URL', value: "${cartridgeURL}"]]
-}''')
+build job: "${workspaceName}/${projectName}/Cartridge_Management/Load_Cartridge", parameters: [[$class: 'StringParameterValue', name: 'CARTRIDGE_CLONE_URL', value: "${cartridgeURL}"]]
+''')
 sandbox()
         }
     }
