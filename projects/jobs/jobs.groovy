@@ -1,10 +1,11 @@
 // Constants
-def gerritBaseUrl = "ssh://jenkins@bitbucket:7999"
-def cartridgeBaseUrl = gerritBaseUrl + "/platform"
-def platformToolsGitUrl = gerritBaseUrl + "/platform/platform-management"
+def bitbucketBaseUrl = "ssh://jenkins@bitbucket:7999"
+def cartridgeBaseUrl = bitbucketBaseUrl + "/platform"
+def platformToolsGitUrl = bitbucketBaseUrl + "/platform/platform-management"
 
 // Folders
 def workspaceFolderName = "${WORKSPACE_NAME}"
+def projectName = "${PROJECT_NAME}"
 
 def projectFolderName = workspaceFolderName + "/${PROJECT_NAME}"
 def projectFolder = folder(projectFolderName)
@@ -38,7 +39,8 @@ loadCartridgeJob.with{
     }
     environmentVariables {
         env('WORKSPACE_NAME',workspaceFolderName)
-        env('PROJECT_NAME',projectFolderName)
+        env('PROJECT_FOLDER_NAME',projectFolderName)
+        env('PROJECT_NAME',projectName)
     }
     wrappers {
         preBuildCleanup()
@@ -66,19 +68,19 @@ export CART_HOME=$(dirname $(find -name metadata.cartridge | head -1))
 
 # Check if the user has enabled Gerrit Code reviewing
 #if [ "$ENABLE_CODE_REVIEW" == true ]; then
-#    permissions_repo="${PROJECT_NAME}/permissions-with-review"
+#    permissions_repo="${PROJECT_FOLDER_NAME}/permissions-with-review"
 #else
-#    permissions_repo="${PROJECT_NAME}/permissions"
+#    permissions_repo="${PROJECT_FOLDER_NAME}/permissions"
 #fi
 echo "TODO : gestion permission bitbucket !!!!"
 
 # Check if folder was specified
 #if [ -z ${CARTRIDGE_FOLDER} ] ; then
 #    echo "Folder name not specified..."
-#    repo_namespace="${PROJECT_NAME}"
+#    repo_namespace="${PROJECT_FOLDER_NAME}"
 #else
 #    echo "Folder name specified, changing project namespace value.."
-#    repo_namespace="${PROJECT_NAME}/${CARTRIDGE_FOLDER}"
+#    repo_namespace="${PROJECT_FOLDER_NAME}/${CARTRIDGE_FOLDER}"
 #fi
 
 # Create repositories
@@ -98,6 +100,14 @@ cat <<EOF > project.json
     "key":"${PROJECT_NAME}",
     "name":"${PROJECT_NAME}",
     "description":"Projet ${PROJECT_NAME}"
+}
+EOF
+
+cat <<EOF > project.json
+{
+    "name":"$repo_name",
+    "scmId":"git", 
+    "forkable":true 
 }
 EOF
 
