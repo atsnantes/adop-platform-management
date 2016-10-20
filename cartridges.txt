@@ -1,1 +1,1 @@
-https://github.com//atsnantes/adop-cartridge-java.git
+https://github.com/atsnantes/adop-cartridge-java.git
